@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from .serializers import AnalyzeRequestSerializer
 from .services.analysis import TripRequest, analyze_trip
-# from .services.geocoding import GeocodingError, GeocodingNotConfigured, search_places
+from .services.geocoding import GeocodingError, GeocodingNotConfigured, search_places
 from .services.routing import RoutingError
 from .services.timezones import timezone_name_at
 from .services.weather import OutsideForecast, RateLimited, WeatherError
@@ -43,13 +43,13 @@ def analyze(request):
     return Response(result)
 
 
-# @api_view(["GET"])
-# def geocode(request):
-#     try:
-#         places = search_places(request.query_params.get("q", ""))
-#     except GeocodingNotConfigured as exc:
-#         return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-#     except GeocodingError as exc:
-#         return Response({"detail": f"Address search failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
+@api_view(["GET"])
+def geocode(request):
+    try:
+        places = search_places(request.query_params.get("q", ""))
+    except GeocodingNotConfigured as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    except GeocodingError as exc:
+        return Response({"detail": f"Address search failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
 
-#     return Response({"results": [{"label": p.label, "lat": p.lat, "lon": p.lon} for p in places]})
+    return Response({"results": [{"label": p.label, "lat": p.lat, "lon": p.lon} for p in places]})
