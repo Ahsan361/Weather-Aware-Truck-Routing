@@ -39,14 +39,14 @@ def search_places(query: str) -> list[Place]:
     if cached is not None:
         return cached
 
-    if not settings.ROUTING_KEY:
-        raise GeocodingNotConfigured("address search needs ROUTING_KEY (an openrouteservice token)")
+    if not settings.ORS_API_KEY:
+        raise GeocodingNotConfigured("address search needs ORS_API_KEY (an openrouteservice token)")
 
     try:
         response = requests.get(
             API_URL,
             params={"text": query, "size": RESULT_LIMIT},
-            headers={"Authorization": settings.ROUTING_KEY},
+            headers={"Authorization": settings.ORS_API_KEY},
             timeout=TIMEOUT_SECONDS,
         )
     except requests.RequestException as exc:

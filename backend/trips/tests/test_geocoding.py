@@ -23,7 +23,7 @@ class FakeResponse:
 
 @pytest.fixture(autouse=True)
 def token(settings):
-    settings.ROUTING_KEY = "test-token"
+    settings.ORS_API_KEY = "test-token"
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ class TestSearch:
         assert len(api) == 1
 
     def test_no_token_is_a_config_error(self, settings):
-        settings.ROUTING_KEY = ""
+        settings.ORS_API_KEY = ""
         with pytest.raises(GeocodingNotConfigured):
             geocoding.search_places("Dallas")
 
@@ -99,5 +99,5 @@ class TestEndpoint:
         assert APIClient().get("/api/geocode/", {"q": "Dallas"}).status_code == 502
 
     def test_missing_token_is_a_503(self, settings):
-        settings.ROUTING_KEY = ""
+        settings.ORS_API_KEY = ""
         assert APIClient().get("/api/geocode/", {"q": "Dallas"}).status_code == 503
