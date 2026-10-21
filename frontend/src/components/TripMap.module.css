@@ -1,0 +1,25 @@
+.map {
+  position: absolute;
+  inset: 0;
+}
+
+.pin {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.35);
+}
+
+.start {
+  background: var(--accent);
+}
+
+.end {
+  background: #17202a;
+}
