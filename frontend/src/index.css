@@ -1,0 +1,94 @@
+:root {
+  --bg: #f1f4f8;
+  --surface: #ffffff;
+  --surface-muted: #f7f9fb;
+  --border: #dce3ea;
+  --border-strong: #c3ccd6;
+  --text: #17202a;
+  --muted: #5b6876;
+  --accent: #1c5fe0;
+  --accent-strong: #1549b8;
+  --accent-soft: #e8f0fe;
+  --danger: #c0292b;
+  --danger-soft: #fdeeee;
+  --radius: 10px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 2px 4px rgba(16, 24, 40, 0.06), 0 8px 20px rgba(16, 24, 40, 0.1);
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* MapLibre popups get the app's look */
+.maplibregl-popup-content {
+  padding: 12px 14px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  font-family: inherit;
+}
+
+.maplibregl-popup-close-button {
+  font-size: 18px;
+  padding: 2px 8px;
+}
