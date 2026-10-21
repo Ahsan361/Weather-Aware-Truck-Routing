@@ -456,6 +456,6 @@ also works on a phone-sized screen and with a keyboard.
 
 ## How this was built
 
-I used an AI assistant (Claude) to help plan, write and test this project. I then went through the code
-module by module so that I understand how each part works and can explain the decisions above. The tests, the
+I used Claude to help in planning and testing the project. I went through the code
+module by module I understand how each part works and can explain the decisions above. The tests, the
 real-service checks and the notes about what failed first are all things I ran and looked at myself.
