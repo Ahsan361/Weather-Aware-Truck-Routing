@@ -1,0 +1,26 @@
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #f0b4b5;
+  border-radius: var(--radius);
+  background: var(--danger-soft);
+  color: #7d1b1d;
+  font-size: 14px;
+}
+
+.notice button {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid #d98a8c;
+  border-radius: 6px;
+  background: #fff;
+  font-weight: 600;
+  color: #7d1b1d;
+}
+
+.notice button:hover {
+  background: #fff5f5;
+}
