@@ -1,122 +1,116 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { lazy, Suspense, useCallback, useRef, useState } from 'react'
+import { useAnalyzeTrip } from './api/trips'
+import type { AnalyzeRequest, AnalyzeResponse } from './api/types'
+import styles from './App.module.css'
+import { AnalysisProgress } from './components/AnalysisProgress'
+import { ErrorNotice } from './components/ErrorNotice'
+import { HeatmapControls } from './components/HeatmapControls'
+import { ResultsPanel } from './components/ResultsPanel'
+import { RiskLegend } from './components/RiskLegend'
+import { TripForm } from './components/TripForm'
 
-function App() {
-  const [count, setCount] = useState(0)
+// MapLibre is most of the app's weight, so it loads in its own chunk while the form is already usable
+const TripMap = lazy(() => import('./components/TripMap').then((module) => ({ default: module.TripMap })))
+
+export default function App() {
+  const analysis = useAnalyzeTrip()
+  const lastRequest = useRef<AnalyzeRequest | null>(null)
+
+  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null)
+  const [focusedCheckpoint, setFocusedCheckpoint] = useState<number | null>(null)
+  const [heatmapVisible, setHeatmapVisible] = useState(true)
+  const [heatmapHour, setHeatmapHour] = useState(0)
+
+  // kept in state rather than read from the mutation, so a failed or pending request
+  // doesn't wipe the routes already on the map
+  const [result, setResult] = useState<AnalyzeResponse | null>(null)
+
+  const analyze = useCallback(
+    (request: AnalyzeRequest) => {
+      lastRequest.current = request
+      analysis.mutate(request, {
+        onSuccess: (data: AnalyzeResponse) => {
+          setResult(data)
+          setSelectedRouteId(data.recommendation.route_id)
+          setFocusedCheckpoint(null)
+          setHeatmapHour(0)
+        },
+      })
+    },
+    // mutate is stable between renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [analysis.mutate],
+  )
+
+  const selectRoute = useCallback((routeId: number) => {
+    setSelectedRouteId(routeId)
+    setFocusedCheckpoint(null)
+  }, [])
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className={styles.app}>
+      <aside className={styles.sidebar}>
+        <header className={styles.brand}>
+          <h1>Spotter</h1>
+          <p>Weather-aware truck routing</p>
+        </header>
 
-      <div className="ticks"></div>
+        <TripForm pending={analysis.isPending} onSubmit={analyze} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <div className={styles.results}>
+          {analysis.isPending && <AnalysisProgress />}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          {analysis.isError && !analysis.isPending && (
+            <ErrorNotice
+              message={analysis.error.message}
+              onRetry={() => lastRequest.current && analyze(lastRequest.current)}
+            />
+          )}
+
+          {result && !analysis.isPending && !analysis.isError && (
+            <ResultsPanel
+              result={result}
+              selectedRouteId={selectedRouteId}
+              focusedCheckpoint={focusedCheckpoint}
+              onSelectRoute={selectRoute}
+              onFocusCheckpoint={setFocusedCheckpoint}
+            />
+          )}
+
+          {!result && !analysis.isPending && !analysis.isError && (
+            <p className={styles.intro}>
+              Enter a trip to compare up to three routes. Each one is checked against the forecast at the time the
+              truck will actually be there, using your load weight.
+            </p>
+          )}
+        </div>
+      </aside>
+
+      <main className={styles.mapArea}>
+        <Suspense fallback={<div className={styles.mapPlaceholder} aria-hidden="true" />}>
+          <TripMap
+            result={result}
+            selectedRouteId={selectedRouteId}
+            focusedCheckpoint={focusedCheckpoint}
+            heatmapVisible={heatmapVisible}
+            heatmapHour={heatmapHour}
+            onSelectRoute={selectRoute}
+            onFocusCheckpoint={setFocusedCheckpoint}
+          />
+        </Suspense>
+        {result && <RiskLegend />}
+        {result && (
+          <HeatmapControls
+            visible={heatmapVisible}
+            onVisibleChange={setHeatmapVisible}
+            hour={heatmapHour}
+            onHourChange={setHeatmapHour}
+            maxHour={result.heatmap.hours}
+            startIso={result.heatmap.start}
+            timeZone={result.origin.timezone}
+          />
+        )}
+      </main>
+    </div>
   )
 }
-
-export default App
