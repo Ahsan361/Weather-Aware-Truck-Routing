@@ -10,7 +10,7 @@ from .services.timezones import timezone_name_at
 from .services.weather import OutsideForecast, RateLimited, WeatherError
 
 
-@api_view(["GET"])
+@api_view(["GET", "HEAD"])
 def health(request):
     return Response({"status": "ok"})
 

@@ -6,11 +6,14 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 import requests
+import logging
 from django.core.cache import cache
 
 from .geo import Point
 from .risk import Weather
 
+
+logger = logging.getLogger(__name__)
 API_URL = "https://api.open-meteo.com/v1/forecast"
 HOURLY_FIELDS = "wind_speed_10m,rain,showers,snowfall"
 
@@ -129,11 +132,19 @@ def _get_with_retries(params: dict):
         if response.status_code == 200:
             return response.json()
         if response.status_code == 429:
+            logger.warning("Open-Meteo refused the request with 429: %s", _reason(response))
             raise RateLimited("The weather service is busy. Please try again in a minute.")
         problem = f"weather service answered {response.status_code}"
         if response.status_code < 500:
             break
     raise WeatherError(problem)
+
+
+def _reason(response) -> str:
+    try:
+        return str(response.json().get("reason", "no reason given"))
+    except ValueError:
+        return "no reason given"
 
 
 def _parse(result: dict) -> HourlyForecast:
